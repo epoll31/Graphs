@@ -8,13 +8,27 @@ namespace Graphs
     {
         public static void PrintGraph<T>(this UnweightedUndirectedGraph<T> graph)
         {
-            foreach (Vertex<T> vertex in graph.Vertices)
+            foreach (UnweightedUndirectedVertex<T> vertex in graph.Vertices)
             {
                 Console.Write($"Vertex {vertex.Value} is connected to: ");
 
-                foreach (Vertex<T> vertex1 in vertex.Edges)
+                foreach (UnweightedUndirectedVertex<T> vertex1 in vertex.Edges)
                 {
                     Console.Write($"{vertex1.Value}, ");
+                }
+                Console.CursorLeft -= 2;
+                Console.Write(" \n\n");
+            }
+        }
+        public static void PrintGraph<T>(this WeightedDirectedGraph<T> graph)
+        {
+            foreach (WeightedDirectedVertex<T> vertex in graph.Vertices)
+            {
+                Console.Write($"Vertex {vertex.Value} is connected to: ");
+
+                foreach (KeyValuePair<WeightedDirectedVertex<T>, float> vertex1 in vertex.Edges)
+                {
+                    Console.Write($"{vertex1.Key.Value}({vertex1.Value}), ");
                 }
                 Console.CursorLeft -= 2;
                 Console.Write(" \n\n");
@@ -24,15 +38,16 @@ namespace Graphs
         static void Main(string[] args)
         {
             string[] lines = File.ReadAllLines("Data.txt");
-            UnweightedUndirectedGraph<int> graph = new UnweightedUndirectedGraph<int>();
+            WeightedDirectedGraph<int> graph = new WeightedDirectedGraph<int>();
 
+            Random random = new Random();
             for (int i = 0; i < int.Parse(lines[0]); i++)
             {
                 graph.AddVertex(i);
             }
             for (int i = 0; i < int.Parse(lines[1]); i++)
             {
-                graph.AddEdge(int.Parse(lines[i + 2].Split(" ")[0]), int.Parse(lines[i + 2].Split(" ")[1]));
+                graph.AddEdge(int.Parse(lines[i + 2].Split(" ")[0]), int.Parse(lines[i + 2].Split(" ")[1]), random.Next(1, 5));
             }
 
             graph.PrintGraph();

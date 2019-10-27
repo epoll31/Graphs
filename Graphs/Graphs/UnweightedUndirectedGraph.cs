@@ -6,14 +6,14 @@ namespace Graphs
 {
     public class UnweightedUndirectedGraph<T>
     {
-        public List<Vertex<T>> Vertices { get; private set; }
+        public List<UnweightedUndirectedVertex<T>> Vertices { get; private set; }
 
         public int VertexCount => Vertices.Count;
         public int EdgeCount { get; internal set; }
 
         public UnweightedUndirectedGraph()
         {
-            Vertices = new List<Vertex<T>>();
+            Vertices = new List<UnweightedUndirectedVertex<T>>();
         }
 
         public void AddVertex(T value)
@@ -23,12 +23,12 @@ namespace Graphs
                 throw new Exception("The value you passed in already exists in this graph.");
             }
 
-            Vertices.Add(new Vertex<T>(value));
+            Vertices.Add(new UnweightedUndirectedVertex<T>(value));
         }
 
 
         public void AddEdge(T v, T w) => AddEdge(Find(v), Find(w));
-        public void AddEdge(Vertex<T> v, Vertex<T> w)
+        public void AddEdge(UnweightedUndirectedVertex<T> v, UnweightedUndirectedVertex<T> w)
         {
             if (v == null || w == null)
             {
@@ -57,7 +57,7 @@ namespace Graphs
         }
 
         public bool RemoveEdge(T v, T w) => RemoveEdge(Find(v), Find(w));
-        public bool RemoveEdge(Vertex<T> v, Vertex<T> w)
+        public bool RemoveEdge(UnweightedUndirectedVertex<T> v, UnweightedUndirectedVertex<T> w)
         {
             //and should work, maybe want or
             return v.Edges.Remove(w) && w.Edges.Remove(v);
@@ -65,7 +65,7 @@ namespace Graphs
 
         public bool Contains(T value) => Find(value) != null;
 
-        public Vertex<T> Find(T value)
+        public UnweightedUndirectedVertex<T> Find(T value)
         {
             for (int i = 0; i < VertexCount; i++)
             {
@@ -77,19 +77,19 @@ namespace Graphs
             return null;
         }
 
-        public T[] DepthFirstTraversal(Vertex<T> startNode)
+        public T[] DepthFirstTraversal(UnweightedUndirectedVertex<T> startNode)
         {
             List<T> returnList = new List<T>(VertexCount);
 
-            Stack<Vertex<T>> stack = new Stack<Vertex<T>>();
+            Stack<UnweightedUndirectedVertex<T>> stack = new Stack<UnweightedUndirectedVertex<T>>();
             stack.Push(startNode);
 
             while (stack.Count != 0)
             {
-                Vertex<T> currentVertex = stack.Pop();
+                UnweightedUndirectedVertex<T> currentVertex = stack.Pop();
                 returnList.Add(currentVertex.Value);
 
-                foreach(Vertex<T> vertex in currentVertex.Edges)
+                foreach(UnweightedUndirectedVertex<T> vertex in currentVertex.Edges)
                 {
                     if (returnList.Contains(vertex.Value))
                     {
@@ -103,19 +103,19 @@ namespace Graphs
             return returnList.ToArray();
         }
 
-        public T[] BreadthFirstTraversal(Vertex<T> startNode)
+        public T[] BreadthFirstTraversal(UnweightedUndirectedVertex<T> startNode)
         {
             List<T> returnList = new List<T>(VertexCount);
 
-            Queue<Vertex<T>> queue = new Queue<Vertex<T>>();
+            Queue<UnweightedUndirectedVertex<T>> queue = new Queue<UnweightedUndirectedVertex<T>>();
             queue.Enqueue(startNode);
 
             while (queue.Count != 0)
             {
-                Vertex<T> currentVertex = queue.Dequeue();
+                UnweightedUndirectedVertex<T> currentVertex = queue.Dequeue();
                 returnList.Add(currentVertex.Value);
 
-                foreach(Vertex<T> vertex in currentVertex.Edges)
+                foreach(UnweightedUndirectedVertex<T> vertex in currentVertex.Edges)
                 {
                     if (returnList.Contains(vertex.Value))
                     {
