@@ -4,14 +4,14 @@ using System.Text;
 
 namespace Graphs
 {
-    public class Graph<T>
+    public class UnweightedUndirectedGraph<T>
     {
         public List<Vertex<T>> Vertices { get; private set; }
 
         public int VertexCount => Vertices.Count;
         public int EdgeCount { get; internal set; }
 
-        public Graph()
+        public UnweightedUndirectedGraph()
         {
             Vertices = new List<Vertex<T>>();
         }
@@ -36,7 +36,7 @@ namespace Graphs
             }
 
             v.Edges.Add(w);
-            v.Edges.Add(w);
+            w.Edges.Add(v);
             EdgeCount++;
         }
 
