@@ -105,7 +105,28 @@ namespace Graphs
 
         public T[] BreadthFirstTraversal(Vertex<T> startNode)
         {
+            List<T> returnList = new List<T>(VertexCount);
 
+            Queue<Vertex<T>> queue = new Queue<Vertex<T>>();
+            queue.Enqueue(startNode);
+
+            while (queue.Count != 0)
+            {
+                Vertex<T> currentVertex = queue.Dequeue();
+                returnList.Add(currentVertex.Value);
+
+                foreach(Vertex<T> vertex in currentVertex.Edges)
+                {
+                    if (returnList.Contains(vertex.Value))
+                    {
+                        continue;
+                    }
+
+                    queue.Enqueue(vertex);
+                }
+            }
+
+            return returnList.ToArray();
         }
     }
 }
