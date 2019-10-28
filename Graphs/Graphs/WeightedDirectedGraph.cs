@@ -135,5 +135,140 @@ namespace Graphs
 
             return returnList.ToArray();
         }
+
+        public WeightedDirectedVertex<T>[] GetPathDF(T startValue, T endValue) => GetPathDF(Find(startValue), Find(endValue));
+        public WeightedDirectedVertex<T>[] GetPathDF(WeightedDirectedVertex<T> startNode, WeightedDirectedVertex<T> endNode)
+        {
+            List<(WeightedDirectedVertex<T>, int)> data = new List<(WeightedDirectedVertex<T>, int)>();
+
+            Stack<(WeightedDirectedVertex<T>, int)> stack = new Stack<(WeightedDirectedVertex<T>, int)>();
+            stack.Push((startNode, 0));
+
+            List<WeightedDirectedVertex<T>> reversedPath = new List<WeightedDirectedVertex<T>>();
+
+            int GetIndex(WeightedDirectedVertex<T> vertex)
+            {
+                for (int i = 0; i < data.Count; i++)
+                {
+                    if (data[i].Item1 == vertex)
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            while (stack.Count > 0)
+            {
+                var vertex = stack.Pop();
+                data.Add((vertex.Item1, vertex.Item2));
+                if (vertex.Item1 == endNode)
+                {
+                    //follow parents back up the list until -1
+                    
+                    while (vertex.Item2 != GetIndex(vertex.Item1))
+                    {
+                        reversedPath.Add(vertex.Item1);
+                        vertex = data[vertex.Item2];
+                    }
+                    reversedPath.Add(vertex.Item1);
+
+                    break;
+                }
+                else
+                {
+                    //push all edges with the index of vertex.Item2
+
+                    foreach (var item in  vertex.Item1.Edges)
+                    {
+                        if (GetIndex(item.Key) == -1)
+                        {
+                            stack.Push((item.Key, GetIndex(vertex.Item1)));
+                        }
+                    }
+                }
+            }
+
+            if (reversedPath.Count == 0)
+            {
+                return null;
+            }
+
+            WeightedDirectedVertex<T>[] returnList = new WeightedDirectedVertex<T>[reversedPath.Count];
+            for (int i = 0; i < returnList.Length; i++)
+            {
+                returnList[i] = reversedPath[reversedPath.Count - 1 - i];
+            }
+
+            return returnList;
+        }
+
+        public WeightedDirectedVertex<T>[] GetPathBF(T startValue, T endValue) => GetPathBF(Find(startValue), Find(endValue));
+        public WeightedDirectedVertex<T>[] GetPathBF(WeightedDirectedVertex<T> startNode, WeightedDirectedVertex<T> endNode)
+        {
+            List<(WeightedDirectedVertex<T>, int)> data = new List<(WeightedDirectedVertex<T>, int)>();
+
+            Queue<(WeightedDirectedVertex<T>, int)> queue = new Queue<(WeightedDirectedVertex<T>, int)>();
+            queue.Enqueue((startNode, 0));
+
+            List<WeightedDirectedVertex<T>> reversedPath = new List<WeightedDirectedVertex<T>>();
+
+            int GetIndex(WeightedDirectedVertex<T> vertex)
+            {
+                for (int i = 0; i < data.Count; i++)
+                {
+                    if (data[i].Item1 == vertex)
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            while (queue.Count > 0)
+            {
+                var vertex = queue.Dequeue();
+                data.Add((vertex.Item1, vertex.Item2));
+                if (vertex.Item1 == endNode)
+                {
+                    //follow parents back up the list until -1
+
+                    while (vertex.Item2 != GetIndex(vertex.Item1))
+                    {
+                        reversedPath.Add(vertex.Item1);
+                        vertex = data[vertex.Item2];
+                    }
+                    reversedPath.Add(vertex.Item1);
+
+                    break;
+                }
+                else
+                {
+                    //push all edges with the index of vertex.Item2
+
+                    foreach (var item in vertex.Item1.Edges)
+                    {
+                        if (GetIndex(item.Key) == -1)
+                        {
+                            queue.Enqueue((item.Key, GetIndex(vertex.Item1)));
+                        }
+                    }
+                }
+            }
+
+            if (reversedPath.Count == 0)
+            {
+                return null;
+            }
+
+            WeightedDirectedVertex<T>[] returnList = new WeightedDirectedVertex<T>[reversedPath.Count];
+            for (int i = 0; i < returnList.Length; i++)
+            {
+                returnList[i] = reversedPath[reversedPath.Count - 1 - i];
+            }
+
+            return returnList;
+        }
+
     }
 }

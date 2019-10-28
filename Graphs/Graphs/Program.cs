@@ -51,6 +51,38 @@ namespace Graphs
             }
 
             graph.PrintGraph();
+
+            WeightedDirectedVertex<int>[] path = graph.GetPathDF(12, 0);
+
+            if (path == null)
+            {
+                Console.WriteLine("This Path Does Not Exist");
+            }
+            else
+            {
+                for (int i = 0; i < path.Length; i++)
+                {
+                    Console.Write($"{path[i].Value} -> ");
+                }
+                Console.CursorLeft -= 3;
+                Console.WriteLine("  ");
+            }
+
+            path = graph.GetPathBF(12, 0);
+
+            if (path == null)
+            {
+                Console.WriteLine("This Path Does Not Exist");
+            }
+            else
+            {
+                for (int i = 0; i < path.Length; i++)
+                {
+                    Console.Write($"{path[i].Value} -> ");
+                }
+                Console.CursorLeft -= 3;
+                Console.WriteLine("  ");
+            }
         }
     }
 }
