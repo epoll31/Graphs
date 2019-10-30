@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\DataStructures\PriorityQueue\PriorityQueue\PriorityQueue.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Data.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

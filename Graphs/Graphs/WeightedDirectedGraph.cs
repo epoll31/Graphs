@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using PriorityQueue;
 
 namespace Graphs
 {
-    public class WeightedDirectedGraph<T>
+    public class WeightedDirectedGraph<T> where T : IComparable
     {
         public List<WeightedDirectedVertex<T>> Vertices { get; private set; }
 
@@ -56,7 +57,7 @@ namespace Graphs
                         break;
                     }
                 }
-                
+
             }
             Vertices.RemoveAll(v => v.Value.Equals(value));
 
@@ -96,7 +97,7 @@ namespace Graphs
                 WeightedDirectedVertex<T> currentVertex = stack.Pop();
                 returnList.Add(currentVertex.Value);
 
-                foreach(KeyValuePair<WeightedDirectedVertex<T>, float> vertex in currentVertex.Edges)
+                foreach (KeyValuePair<WeightedDirectedVertex<T>, float> vertex in currentVertex.Edges)
                 {
                     if (returnList.Contains(vertex.Key.Value))
                     {
@@ -122,7 +123,7 @@ namespace Graphs
                 WeightedDirectedVertex<T> currentVertex = queue.Dequeue();
                 returnList.Add(currentVertex.Value);
 
-                foreach(KeyValuePair<WeightedDirectedVertex<T>, float> vertex in currentVertex.Edges)
+                foreach (KeyValuePair<WeightedDirectedVertex<T>, float> vertex in currentVertex.Edges)
                 {
                     if (returnList.Contains(vertex.Key.Value))
                     {
@@ -165,7 +166,7 @@ namespace Graphs
                 if (vertex.Item1 == endNode)
                 {
                     //follow parents back up the list until -1
-                    
+
                     while (vertex.Item2 != GetIndex(vertex.Item1))
                     {
                         reversedPath.Add(vertex.Item1);
@@ -179,7 +180,7 @@ namespace Graphs
                 {
                     //push all edges with the index of vertex.Item2
 
-                    foreach (var item in  vertex.Item1.Edges)
+                    foreach (var item in vertex.Item1.Edges)
                     {
                         if (GetIndex(item.Key) == -1)
                         {
@@ -270,5 +271,71 @@ namespace Graphs
             return returnList;
         }
 
+        public (LinkedList<WeightedDirectedVertex<T>>, float) GetShortesPathDijkstras(T startValue, T endValue) => GetShortesPathDijkstras(Find(startValue), Find(endValue));
+        public (LinkedList<WeightedDirectedVertex<T>>, float) GetShortesPathDijkstras(WeightedDirectedVertex<T> startNode, WeightedDirectedVertex<T> endNode)
+        {
+            ResetVertices();
+
+            startNode.CumulativeDistanceFromStart = 0;
+            PriorityQueue<float, WeightedDirectedVertex<T>> priorityQueue = new PriorityQueue<float, WeightedDirectedVertex<T>>();
+
+            priorityQueue.Insert(startNode, startNode.CumulativeDistanceFromStart);
+
+            while (endNode.HasVisited == false && priorityQueue.Count != 0)
+            {
+                WeightedDirectedVertex<T> currentVertex = priorityQueue.Pop();
+                
+                foreach (KeyValuePair<WeightedDirectedVertex<T>, float> keyValuePair in currentVertex.Edges)
+                {
+                    float tentativeCost = currentVertex.CumulativeDistanceFromStart + keyValuePair.Value;
+                    if (tentativeCost < keyValuePair.Key.CumulativeDistanceFromStart)
+                    {
+                        keyValuePair.Key.CumulativeDistanceFromStart = tentativeCost;
+                        keyValuePair.Key.Founder = currentVertex;
+                        keyValuePair.Key.HasVisited = false;
+                    }
+
+                    if (keyValuePair.Key.HasVisited == false && !priorityQueue.Contains(keyValuePair.Key))
+                    {
+                        priorityQueue.Insert(keyValuePair.Key, keyValuePair.Key.CumulativeDistanceFromStart);
+                    }
+                }
+                currentVertex.HasVisited = true;
+            }
+
+            if (priorityQueue.Count == 0)
+            {
+                return (null, float.NaN);
+            }
+
+            LinkedList<WeightedDirectedVertex<T>> path = new LinkedList<WeightedDirectedVertex<T>>();
+
+            WeightedDirectedVertex<T> current = endNode;
+            float cost = 0;
+            while (current != null)
+            {
+                path.AddFirst(current);
+
+                WeightedDirectedVertex<T> lastCurrent = current;
+                current = current.Founder;
+
+                if (current != null)
+                {
+                    cost += current.Edges[lastCurrent];
+                }
+            }
+
+            return (path, cost);
+        }
+
+        private void ResetVertices()
+        {
+            for (int i = 0; i < VertexCount; i++)
+            {
+                Vertices[i].HasVisited = false;
+                Vertices[i].CumulativeDistanceFromStart = float.PositiveInfinity;
+                Vertices[i].Founder = null;
+            }
+        }
     }
 }

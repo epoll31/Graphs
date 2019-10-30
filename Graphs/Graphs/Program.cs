@@ -20,7 +20,7 @@ namespace Graphs
                 Console.Write(" \n\n");
             }
         }
-        public static void PrintGraph<T>(this WeightedDirectedGraph<T> graph)
+        public static void PrintGraph<T>(this WeightedDirectedGraph<T> graph) where T : IComparable
         {
             foreach (WeightedDirectedVertex<T> vertex in graph.Vertices)
             {
@@ -79,6 +79,23 @@ namespace Graphs
                 for (int i = 0; i < path.Length; i++)
                 {
                     Console.Write($"{path[i].Value} -> ");
+                }
+                Console.CursorLeft -= 3;
+                Console.WriteLine("  ");
+            }
+
+            (LinkedList<WeightedDirectedVertex<int>>, float) dijkstras = graph.GetShortesPathDijkstras(12, 5);
+
+            if (dijkstras.Item1 == null)
+            {
+                Console.WriteLine("This Path Does Not Exist");
+            }
+            else
+            {
+                Console.WriteLine($"Cost: {dijkstras.Item2}");
+                foreach (WeightedDirectedVertex<int> vertex in dijkstras.Item1)
+                {
+                    Console.Write($"{vertex.Value} -> ");
                 }
                 Console.CursorLeft -= 3;
                 Console.WriteLine("  ");
