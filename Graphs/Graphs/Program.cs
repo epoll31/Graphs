@@ -212,8 +212,22 @@ namespace Graphs
             {
                 return 1 * (Math.Abs(startVertex.Value.x - endVertex.Value.x) + Math.Abs(startVertex.Value.y - endVertex.Value.y));
             }
+            float DiagonalHeuristic(WeightedDirectedVertex<(int x, int y)> startVertex, WeightedDirectedVertex<(int x, int y)> endVertex)
+            {
+                float dx = Math.Abs(startVertex.Value.x - endVertex.Value.x);
+                float dy = Math.Abs(startVertex.Value.y - endVertex.Value.y);
+                float min = MathF.Min(dx, dy);
+                return 1 * (dx + dy) + (1 - 2 * 1) * min;
+            }
+            float EuclideanHeuristic(WeightedDirectedVertex<(int x, int y)> startVertex, WeightedDirectedVertex<(int x, int y)> endVertex)
+            {
+                float dx = Math.Abs(startVertex.Value.x - endVertex.Value.x);
+                float dy = Math.Abs(startVertex.Value.y - endVertex.Value.y);
+                float min = MathF.Min(dx, dy);
+                return 1 * (float)Math.Sqrt(dx * dx + dy * dy);
+            }
 
-            (LinkedList<WeightedDirectedVertex<(int x, int y)>> path, float cost) = graph.GetShortestPathAStar((0, 0), (9, 0), ManhattanHeuristic);
+            (LinkedList<WeightedDirectedVertex<(int x, int y)>> path, float cost) = graph.GetShortestPathAStar((0, 0), (9, 0), EuclideanHeuristic);
 
             Console.WriteLine($"Cost: {cost}");
             foreach (WeightedDirectedVertex<(int x, int y)> vertex in path)
