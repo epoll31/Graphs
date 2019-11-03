@@ -29,13 +29,16 @@ namespace Graphs
         }
 
 
-        public void AddEdge(T v, T w, float weight) => AddEdge(Find(v), Find(w), weight);
+        public void AddEdge(T v, T w, float weight) =>
+            AddEdge(Find(v), Find(w), weight);
         public void AddEdge(WeightedDirectedVertex<T> v, WeightedDirectedVertex<T> w, float weight)
         {
             if (v == null || w == null)
             {
                 throw new Exception("One of the parameters passed was null");
             }
+
+            Debug.WriteLine($"{ v.Value }, { w.Value }");
 
             v.Edges.Add(w, weight);
             EdgeCount++;
@@ -292,38 +295,36 @@ namespace Graphs
         public (LinkedList<WeightedDirectedVertex<T>>, float) GetShortestPathDijkstras(T startValue, T endValue) => GetShortestPathDijkstras(Find(startValue), Find(endValue));
         public (LinkedList<WeightedDirectedVertex<T>>, float) GetShortestPathDijkstras(WeightedDirectedVertex<T> startVertex, WeightedDirectedVertex<T> endVertex)
         {
+            Dictionary<WeightedDirectedVertex<T>, (bool hasVisited, float cumulativeDistanceFromStart, WeightedDirectedVertex<T> founder)> vertexInfo = new Dictionary<WeightedDirectedVertex<T>, (bool hasVisited, float cumulativeDistanceFromStart, WeightedDirectedVertex<T> founder)>();
+
             for (int i = 0; i < VertexCount; i++)
             {
-                Vertices[i].HasVisited = false;
-                Vertices[i].CumulativeDistanceFromStart = float.PositiveInfinity;
-                Vertices[i].Founder = null;
+                vertexInfo[Vertices[i]] = (false, float.PositiveInfinity, null);
             }
 
-            startVertex.CumulativeDistanceFromStart = 0;
+            vertexInfo[startVertex] = (false, 0, null);
             PriorityQueue<float, WeightedDirectedVertex<T>> priorityQueue = new PriorityQueue<float, WeightedDirectedVertex<T>>();
 
-            priorityQueue.Insert(startVertex, startVertex.CumulativeDistanceFromStart);
+            priorityQueue.Insert(startVertex, vertexInfo[startVertex].cumulativeDistanceFromStart);
 
-            while (endVertex.HasVisited == false && priorityQueue.Count != 0)
+            while (vertexInfo[endVertex].hasVisited == false && priorityQueue.Count != 0)
             {
                 WeightedDirectedVertex<T> currentVertex = priorityQueue.Pop();
 
                 foreach (KeyValuePair<WeightedDirectedVertex<T>, float> keyValuePair in currentVertex.Edges)
                 {
-                    float tentativeCost = currentVertex.CumulativeDistanceFromStart + keyValuePair.Value;
-                    if (tentativeCost < keyValuePair.Key.CumulativeDistanceFromStart)
+                    float tentativeCost = vertexInfo[currentVertex].cumulativeDistanceFromStart + keyValuePair.Value;
+                    if (tentativeCost < vertexInfo[keyValuePair.Key].cumulativeDistanceFromStart)
                     {
-                        keyValuePair.Key.CumulativeDistanceFromStart = tentativeCost;
-                        keyValuePair.Key.Founder = currentVertex;
-                        keyValuePair.Key.HasVisited = false;
+                        vertexInfo[keyValuePair.Key] = (false, tentativeCost, currentVertex);
                     }
 
-                    if (keyValuePair.Key.HasVisited == false && !priorityQueue.Contains(keyValuePair.Key))
+                    if (vertexInfo[keyValuePair.Key].hasVisited == false && !priorityQueue.Contains(keyValuePair.Key))
                     {
-                        priorityQueue.Insert(keyValuePair.Key, keyValuePair.Key.CumulativeDistanceFromStart);
+                        priorityQueue.Insert(keyValuePair.Key, vertexInfo[keyValuePair.Key].cumulativeDistanceFromStart);
                     }
                 }
-                currentVertex.HasVisited = true;
+                vertexInfo[currentVertex] = (true, vertexInfo[currentVertex].cumulativeDistanceFromStart, vertexInfo[currentVertex].founder);
             }
 
             if (priorityQueue.Count == 0)
@@ -340,7 +341,7 @@ namespace Graphs
                 path.AddFirst(current);
 
                 WeightedDirectedVertex<T> lastCurrent = current;
-                current = current.Founder;
+                current = vertexInfo[current].founder;
 
                 if (current != null)
                 {
@@ -352,18 +353,19 @@ namespace Graphs
         }
 
         public (LinkedList<WeightedDirectedVertex<T>>, float) GetShortestPathBellmanFord(T startValue, T endValue) => GetShortestPathBellmanFord(Find(startValue), Find(endValue));
-        public (LinkedList<WeightedDirectedVertex<T>>, float) GetShortestPathBellmanFord(WeightedDirectedVertex<T> startVertex, WeightedDirectedVertex<T> endNode)
+        public (LinkedList<WeightedDirectedVertex<T>>, float) GetShortestPathBellmanFord(WeightedDirectedVertex<T> startVertex, WeightedDirectedVertex<T> endVertex)
         {
+            Dictionary<WeightedDirectedVertex<T>, (float cumulativeDistanceFromStart, WeightedDirectedVertex<T> founder)> vertexInfo = new Dictionary<WeightedDirectedVertex<T>, (float cumulativeDistanceFromStart, WeightedDirectedVertex<T> founder)>();
+
             for (int i = 0; i < VertexCount; i++)
             {
-                Vertices[i].Founder = null;
                 if (Vertices[i].Equals(startVertex))
                 {
-                    Vertices[i].CumulativeDistanceFromStart = 0;
+                    vertexInfo[Vertices[i]] = (0, null);
                 }
                 else
                 {
-                    Vertices[i].CumulativeDistanceFromStart = float.PositiveInfinity;
+                    vertexInfo[Vertices[i]] = (float.PositiveInfinity, null);
                 }
             }
 
@@ -376,12 +378,11 @@ namespace Graphs
                 foreach (KeyValuePair<WeightedDirectedVertex<T>, float> edge in vertex.Edges)
                 {
                     TryGetEdgeWeight(vertex, edge.Key, out float edgeWeight);
-                    float tempDistance = vertex.CumulativeDistanceFromStart + edgeWeight;
-                    if (tempDistance < edge.Key.CumulativeDistanceFromStart)
+                    float tempDistance = vertexInfo[vertex].cumulativeDistanceFromStart + edgeWeight;
+                    if (tempDistance < vertexInfo[edge.Key].cumulativeDistanceFromStart)
                     {
                         //throw new Exception("There is a negative cycle");
-                        edge.Key.CumulativeDistanceFromStart = tempDistance;
-                        edge.Key.Founder = vertex;
+                        vertexInfo[edge.Key] = (tempDistance, vertex);
                     }
                 }
 
@@ -398,7 +399,7 @@ namespace Graphs
 
                 foreach (KeyValuePair<WeightedDirectedVertex<T>, float> edge in currentVertex.Edges)
                 {
-                    if (currentVertex.CumulativeDistanceFromStart + edge.Value < edge.Key.CumulativeDistanceFromStart)
+                    if (vertexInfo[currentVertex].cumulativeDistanceFromStart + edge.Value < vertexInfo[edge.Key].cumulativeDistanceFromStart)
                     {
                         throw new Exception("There is a negative cycle");
                     }
@@ -435,16 +436,83 @@ namespace Graphs
 
             LinkedList<WeightedDirectedVertex<T>> linkedList = new LinkedList<WeightedDirectedVertex<T>>();
 
-            WeightedDirectedVertex<T> tempVertex = endNode;
+            WeightedDirectedVertex<T> tempVertex = endVertex;
 
             while (tempVertex != null)
             {
                 linkedList.AddFirst(tempVertex);
-                tempVertex = tempVertex.Founder;
+                tempVertex = vertexInfo[tempVertex].founder;
                 Debug.WriteLine("still going");
             }
 
-            return (linkedList, endNode.CumulativeDistanceFromStart);
+            return (linkedList, vertexInfo[endVertex].cumulativeDistanceFromStart);
+        }
+
+        public (LinkedList<WeightedDirectedVertex<T>>, float) GetShortestPathAStar(T startValue, T endValue, Func<WeightedDirectedVertex<T>, WeightedDirectedVertex<T>, float> heuristicFunc) => GetShortestPathAStar(Find(startValue), Find(endValue), heuristicFunc);
+
+        public (LinkedList<WeightedDirectedVertex<T>>, float) GetShortestPathAStar(WeightedDirectedVertex<T> startVertex, WeightedDirectedVertex<T> endVertex, Func<WeightedDirectedVertex<T>, WeightedDirectedVertex<T>, float> heuristicFunc)
+        {
+            Dictionary<WeightedDirectedVertex<T>, (float cumulativeDistanceFromStart, float finalDistance, WeightedDirectedVertex<T> founder, bool hasVisited)> vertexInfo = new Dictionary<WeightedDirectedVertex<T>, (float cumulativeDistanceFromStart, float finalDistance, WeightedDirectedVertex<T> founder, bool hasVisited)>();
+
+            for (int i = 0; i < VertexCount; i++)
+            {
+                vertexInfo[Vertices[i]] = (float.PositiveInfinity, float.PositiveInfinity, null, false);
+            }
+            vertexInfo[startVertex] = (0, heuristicFunc(startVertex, endVertex), null, false);
+
+            PriorityQueue<float, WeightedDirectedVertex<T>> queue = new PriorityQueue<float, WeightedDirectedVertex<T>>();
+
+            queue.Insert(startVertex, vertexInfo[startVertex].finalDistance);
+
+            while (queue.Count != 0)
+            {
+                WeightedDirectedVertex<T> currentVertex = queue.Pop();
+
+                foreach (KeyValuePair<WeightedDirectedVertex<T>, float> edge in currentVertex.Edges)
+                {
+                    if (vertexInfo[edge.Key].hasVisited)
+                    {
+                        continue;
+                    }
+
+                    float tentativeDistance = vertexInfo[currentVertex].cumulativeDistanceFromStart + edge.Value;
+                    if (tentativeDistance < vertexInfo[edge.Key].cumulativeDistanceFromStart)
+                    {
+                        vertexInfo[edge.Key] = (tentativeDistance, tentativeDistance + heuristicFunc(edge.Key, endVertex), currentVertex, vertexInfo[edge.Key].hasVisited);
+                    }
+
+                    if (!vertexInfo[edge.Key].hasVisited)
+                    {
+                        queue.Insert(edge.Key, vertexInfo[edge.Key].finalDistance);
+                    }
+                }
+
+                vertexInfo[currentVertex] = (vertexInfo[currentVertex].cumulativeDistanceFromStart, vertexInfo[currentVertex].finalDistance, vertexInfo[currentVertex].founder, true);
+
+                if (vertexInfo[endVertex].hasVisited)
+                {
+                    break;
+                }
+            }
+
+            LinkedList<WeightedDirectedVertex<T>> path = new LinkedList<WeightedDirectedVertex<T>>();
+
+            WeightedDirectedVertex<T> current = endVertex;
+            float cost = 0;
+            while (current != null)
+            {
+                path.AddFirst(current);
+
+                WeightedDirectedVertex<T> lastCurrent = current;
+                current = vertexInfo[current].founder;
+
+                if (current != null)
+                {
+                    cost += current.Edges[lastCurrent];
+                }
+            }
+
+            return (path, cost);
         }
     }
 }
