@@ -40,18 +40,18 @@ namespace Graphs
             string[] lines = File.ReadAllLines("Data.txt");
             WeightedDirectedGraph<int> graph = new WeightedDirectedGraph<int>();
 
-            Random random = new Random();
             for (int i = 0; i < int.Parse(lines[0]); i++)
             {
                 graph.AddVertex(i);
             }
             for (int i = 0; i < int.Parse(lines[1]); i++)
             {
-                graph.AddEdge(int.Parse(lines[i + 2].Split(" ")[0]), int.Parse(lines[i + 2].Split(" ")[1]), random.Next(1, 5));
+                graph.AddEdge(int.Parse(lines[i + 2].Split(" ")[0]), int.Parse(lines[i + 2].Split(" ")[1]), int.Parse(lines[i + 2].Split(" ")[2]));
             }
 
             graph.PrintGraph();
 
+            /*
             WeightedDirectedVertex<int>[] path = graph.GetPathDF(12, 0);
 
             if (path == null)
@@ -83,8 +83,9 @@ namespace Graphs
                 Console.CursorLeft -= 3;
                 Console.WriteLine("  ");
             }
-
-            (LinkedList<WeightedDirectedVertex<int>>, float) dijkstras = graph.GetShortesPathDijkstras(12, 5);
+            */
+            (LinkedList<WeightedDirectedVertex<int>>, float) dijkstras = 
+                graph.GetShortestPathBellmanFord(0, 3);
 
             if (dijkstras.Item1 == null)
             {
